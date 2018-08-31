@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.4.1/workbox-sw.js');
 
-const r = '0.2.1-a50'
+const r = '0.2.1-a51'
 const development = true
 
 console.log('SW: started; revision', r)
@@ -27,7 +27,7 @@ workbox.routing.registerNavigationRoute('/_spa_dummy',
 
 workbox.routing.registerRoute(
   /^https?:\/\/[^\/]+\/[a-z0-9\-\/]+\.json$/,
-  strategy({ cacheName: 'CN-data' })
+  strategy({ cacheName: 'CN-data', fetchOptions: { credentials: 'include' } })
 )
 
 workbox.precaching.precacheAndRoute(
