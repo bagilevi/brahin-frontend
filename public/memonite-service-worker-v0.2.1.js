@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.4.1/workbox-sw.js');
 
-const r = '0.2.1-a51'
+const r = '0.2.1-a52'
 const development = true
 
 console.log('SW: started; revision', r)
@@ -30,7 +30,7 @@ workbox.routing.registerRoute(
   strategy({ cacheName: 'CN-data', fetchOptions: { credentials: 'include' } })
 )
 
-workbox.precaching.precacheAndRoute(
+workbox.precaching.precache(
   [
     '/',
     '/_spa_dummy',
@@ -54,6 +54,11 @@ workbox.precaching.precacheAndRoute(
     '/memonite-storage-v0.2.1.js',
     '/memonite-slate-editor-v1.js',
   ]
+)
+
+workbox.routing.registerRoute(
+  /\.(js|css|woff|png)$/,
+  strategy({ cacheName: 'CN-code' })
 )
 
 workbox.skipWaiting()
