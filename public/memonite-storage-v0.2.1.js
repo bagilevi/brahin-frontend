@@ -9,22 +9,45 @@ define((require, exports, module) => ((Memonite) => {
 
   const unsavedChanges = new Set();
 
+  function normalizeUrl(url) {
+    return url.replace(/^(https?:\/\/[^\/]+)?\/$/, '$1/home') + '.json'
+  }
+
   function getResource(url) {
+
+    // /    => /home.json
+    // /etc => /etc.json
+    const requestUrl = normalizeUrl(url)
+
     return new Promise((resolve, reject) => {
-      $.ajax({
-        url: url + '.json',
-        method: 'get',
-        dataType: 'json',
-        success: (resource) => {
-          console.log('backend returned', resource)
-          resource.url = location.href
-          resolve(resource)
-        },
-        error: (err) => {
-          console.log(`Failed to load ${url}:`, err)
-          reject(err)
-        }
-      })
+      fetch(requestUrl)
+        .then(response => {
+          if (response.status !== 200) {
+            const errorMessage = `Request to ${requestUrl} returned HTTP ${response.status}`
+            console.error(errorMessage, response)
+            reject(errorMessage)
+            return
+          }
+          console.log('got response', response)
+          response.text()
+            .then(text => {
+              console.log('response body', text)
+              const resource = JSON.parse(text)
+              resource.url = url
+              console.log('Resource fetch successful', resource)
+              resolve(resource)
+            })
+            .catch(err => {
+              const errorMessage = `Error decoding response from ${requestUrl}`
+              console.error(errorMessage, err)
+              reject(errorMessage)
+            })
+        })
+        .catch(err => {
+          const errorMessage = `Error fetching ${url}`
+          console.error(errorMessage, err)
+          reject(errorMessage)
+        })
     })
   }
 
@@ -139,8 +162,10 @@ define((require, exports, module) => ((Memonite) => {
     return new Promise((resolve, reject) => {
       const data = _.assign({ authenticity_token: authenticityToken }, updatedAttributes)
 
+      const requestUrl = normalizeUrl(resource.url || resource.path)
+
       $.ajax({
-        url: resource.path,
+        url: requestUrl,
         method: 'patch',
         data: data,
         success: () => {
@@ -149,6 +174,7 @@ define((require, exports, module) => ((Memonite) => {
         },
         error: (err) => {
           console.error('error while saving', err);
+          Memonite.showError(`Error while saving ${resource.path}`)
           reject(err);
         },
       })

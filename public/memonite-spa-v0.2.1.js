@@ -11,6 +11,7 @@ define((require, exports, module) => ((Memonite) => {
   const swapper = new Swapper();
   const spa = Memonite.spa = {
     showResource,
+    hideCurrentResource,
   };
 
   init();
@@ -22,9 +23,13 @@ define((require, exports, module) => ((Memonite) => {
     }
   }
 
+  function hideCurrentResource() {
+    window.resource = null
+    swapper.hide()
+  }
+
   function showResource(resource) {
     window.resource = resource
-
 
     swapper.show(resource.url, (el) => {
       // Callback to initialize the DOM element if wasn't in the cache
@@ -42,9 +47,7 @@ define((require, exports, module) => ((Memonite) => {
     }
 
     this.show = (key, initialize) => {
-      var parent = $('.m-resource').parent()
-      if (parent.length === 0) parent = $('#page')
-      if (parent.length === 0) parent = $('body')
+      const parent = $('#page')
       $('.m-resource').hide().removeClass('m-resource')
 
       var el = cache[key]
@@ -60,6 +63,10 @@ define((require, exports, module) => ((Memonite) => {
         cache[key] = el
         initialize(el)
       }
+    }
+
+    this.hide = () => {
+      $('.m-resource').hide().removeClass('m-resource')
     }
   }
 }))

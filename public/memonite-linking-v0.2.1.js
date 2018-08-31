@@ -36,12 +36,14 @@ define((require, exports, module) => ((Memonite) => {
 
   function replaceResourceByCurrentLocation() {
     // Load resource from the backend // TODO: or cache
+    Memonite.spa.hideCurrentResource()
     Memonite.storage.getResource(location.href)
       .then((resource) => {
         Memonite.spa.showResource(resource)
       })
       .catch(err => {
         console.error('Could not show resource', err)
+        Memonite.showError(`Error while loading ${location.href}`)
       })
   }
 
