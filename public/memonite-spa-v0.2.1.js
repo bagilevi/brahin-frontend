@@ -42,7 +42,9 @@ define((require, exports, module) => ((Memonite) => {
     }
 
     this.show = (key, initialize) => {
-      const parent = $('.m-resource').parent();
+      var parent = $('.m-resource').parent()
+      if (parent.length === 0) parent = $('#page')
+      if (parent.length === 0) parent = $('body')
       $('.m-resource').hide().removeClass('m-resource')
 
       var el = cache[key]

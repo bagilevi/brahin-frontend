@@ -3,10 +3,30 @@ console.log('storage module loaded');
 
 define((require, exports, module) => ((Memonite) => {
   const storage = Memonite.storage = {
+    getResource,
     createEditorChangeReceiver,
   };
 
   const unsavedChanges = new Set();
+
+  function getResource(url) {
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: url + '.json',
+        method: 'get',
+        dataType: 'json',
+        success: (resource) => {
+          console.log('backend returned', resource)
+          resource.url = location.href
+          resolve(resource)
+        },
+        error: (err) => {
+          console.log(`Failed to load ${url}:`, err)
+          reject(err)
+        }
+      })
+    })
+  }
 
   // Returns a function that can be passed to the editor, to be called whenever
   // a change is made by the user.

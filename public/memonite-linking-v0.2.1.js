@@ -36,16 +36,13 @@ define((require, exports, module) => ((Memonite) => {
 
   function replaceResourceByCurrentLocation() {
     // Load resource from the backend // TODO: or cache
-    $.ajax({
-      url: location.href + '.json',
-      method: 'get',
-      dataType: 'json',
-      success: (resource) => {
-        resource.url = location.href
-        console.log('backend returned', resource)
+    Memonite.storage.getResource(location.href)
+      .then((resource) => {
         Memonite.spa.showResource(resource)
-      }
-    })
+      })
+      .catch(err => {
+        console.error('Could not show resource', err)
+      })
   }
 
   function onPopState(stateObj) {

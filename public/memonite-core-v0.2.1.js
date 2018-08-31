@@ -24,6 +24,43 @@ define(['jquery'], ($) => {
     msgEl.on('click', () => msgEl.remove())
   }
 
+  // Service Worker registration
+  if ('serviceWorker' in navigator) {
+    const swUrl = `/memonite-service-worker-v${Memonite.VERSION}.js`
+    window.unregister = () => {
+      navigator.serviceWorker
+        .ready
+        .then(registration => {
+          this.swReg = registration
+          registration.unregister()
+          console.log('SW-r: unregistered', registration)
+        })
+    }
+    console.log('SW-r: registering', swUrl)
+    navigator.serviceWorker
+      .register(swUrl)
+      .then(registration => {
+        console.log('SW-r: registered', registration)
+        window.swReg = registration
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          installingWorker.onstatechange = () => {
+            console.log('SW-r:', installingWorker.state)
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                console.log('SW-r: New content is available; please refresh.');
+              } else {
+                console.log('SW-r: Content is cached for offline use.');
+              }
+            }
+          }
+        }
+      })
+      .catch(error => {
+        console.error('SW-r: registration failed', error)
+      })
+  }
+
   $(document).ready(() => {
     Promise.all([
       loadPluginScript('memonite-ui',      Memonite.VERSION),
@@ -40,19 +77,36 @@ define(['jquery'], ($) => {
 
   // Find the main resource on the page and load its editor
   function initResourceEditorFromDocument() {
+    console.log('initResourceEditorFromDocument')
     const el = $('.m-resource').first()
-    const resource = {
-      id: el.data('m-id'),
-      url: window.location.href,
-      path: window.location.pathname,
-      editor: el.data('m-editor'),
-      editor_url: el.data('m-editor-url'),
-      body: el.html(),
+    if (el.length) {
+      const resource = {
+        id: el.data('m-id'),
+        url: window.location.href,
+        path: window.location.pathname,
+        editor: el.data('m-editor'),
+        editor_url: el.data('m-editor-url'),
+        body: el.html(),
+      }
+      initResourceEditor(resource, el)
     }
-    initResourceEditor(resource, el)
+    else {
+      initResourceEditorFromLocation()
+    }
+  }
+
+  function initResourceEditorFromLocation() {
+    Memonite.storage.getResource(location.href)
+      .then(resource => {
+        Memonite.spa.showResource(resource)
+      })
+      .catch(err => {
+        console.error('Cannot initialize editor because could not get resource from storage', err)
+      })
   }
 
   function initResourceEditor(resource, el) {
+    console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
     require([scriptUrl], (editorLoader) => {
       console.log('editorLoader', editorLoader)
@@ -99,7 +153,8 @@ define(['jquery'], ($) => {
 
   function loadPluginScript(name, version) {
     return new Promise((resolve, reject) => {
-      require([`/plugin?name=${name}-v${version}&type=js`], (result) => {
+      const url = buildPluginUrl(name, version, 'js')
+      require([url], (result) => {
         console.log('loadPluginScript', name, '=> ', result)
         result(Memonite);
         resolve();
@@ -107,8 +162,14 @@ define(['jquery'], ($) => {
     })
   }
 
+  function buildPluginUrl(name, version, type) {
+    const ver = version ? `-v${version}` : ''
+    const ext = type ? `.${type}` : ''
+    return `/${name}${ver}${ext}`
+  }
+
   function loadPluginCss(name, version) {
-    return loadCss(`/plugin?name=${name}-v${version}&type=css`)
+    return loadCss(buildPluginUrl(name, version, 'css'))
   }
 
   function debounce(func, wait, immediate) {
@@ -129,7 +190,8 @@ define(['jquery'], ($) => {
   function getEditorUrl(resource) {
     const { editor, editor_url } = resource
     if (!editor) throw new Error('resource does not have "editor" property')
-    return `/plugin?name=${editor}&url=${editor_url}&type=js`
+    return buildPluginUrl(editor, null, 'js')
+    // return `/plugin?name=${editor}&url=${editor_url}&type=js`
   }
 
 })
