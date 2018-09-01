@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+require 'pp'
+require 'fileutils'
+
+VERSION_FILE = 'src/VERSION'
+BACKEND_VERSION_FILE = '../main/VERSION'
+SOURCE_DIR = 'src/modules'
+TARGET_DIR = '../homepage/public_html/modules'
+RELEASE_COMMAND = '../homepage/bin/release'
+
+version = File.read(VERSION_FILE).strip
+
+# Copy files
+Dir["#{SOURCE_DIR}/*"].each do |fn|
+  dir  = File.dirname(fn)
+  base = File.basename(fn, ".*")
+  ext  = File.extname(fn)
+
+  target_fn = "#{TARGET_DIR}/memonite-#{base}-v#{version}#{ext}"
+
+  puts "Process: #{fn} -> #{target_fn}"
+  content = File.read(fn)
+  content.gsub!('{{VERSION}}', version)
+  File.open(target_fn, 'w') do |f|
+    f.write(content)
+  end
+end
+
+puts `#{RELEASE_COMMAND}`
