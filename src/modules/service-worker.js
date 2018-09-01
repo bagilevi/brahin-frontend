@@ -1,6 +1,6 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/3.4.1/workbox-sw.js');
 
-const r = '0.2.1-a52'
+const r = '{{VERSION}}'
 const development = true
 
 console.log('SW: started; revision', r)
@@ -14,21 +14,6 @@ if (development) {
 else {
   strategy = workbox.strategies.cacheFirst
 }
-
-workbox.routing.registerNavigationRoute('/_spa_dummy',
-  {
-    whitelist: [
-      new RegExp('^[a-z0-9\-\/]*$')
-    ],
-
-  },
-  strategy({ cacheName: 'CN-nav' })
-);
-
-workbox.routing.registerRoute(
-  /^https?:\/\/[^\/]+\/[a-z0-9\-\/]+\.json$/,
-  strategy({ cacheName: 'CN-data', fetchOptions: { credentials: 'include' } })
-)
 
 workbox.precaching.precache(
   [
@@ -46,14 +31,38 @@ workbox.precaching.precache(
     '/jquery-ui/jquery-ui.theme.min.css',
     '/jquery-ui/images/ui-icons_777777_256x240.png',
     '/jquery-ui/images/ui-icons_444444_256x240.png',
-    '/memonite-core-v0.2.1.js',
-    '/memonite-ui-v0.2.1.js',
-    '/memonite-ui-v0.2.1.css',
-    '/memonite-linking-v0.2.1.js',
-    '/memonite-spa-v0.2.1.js',
-    '/memonite-storage-v0.2.1.js',
+    '/memonite-core-{{VERSION}}.js',
+    '/memonite-ui-{{VERSION}}.js',
+    '/memonite-ui-{{VERSION}}.css',
+    '/memonite-linking-{{VERSION}}.js',
+    '/memonite-spa-{{VERSION}}.js',
+    '/memonite-storage-{{VERSION}}.js',
     '/memonite-slate-editor-v1.js',
   ]
+)
+
+workbox.routing.registerRoute(
+  /^https?:\/\/[^\/]+\/$/,
+  strategy({ cacheName: 'CN-root' })
+)
+
+workbox.routing.registerRoute(
+  /^https?:\/\/[^\/]+\/_spa_dummy$/,
+  strategy({ cacheName: 'CN-dummy' })
+)
+
+workbox.routing.registerNavigationRoute('/_spa_dummy',
+  {
+    whitelist: [
+      new RegExp('^[a-z0-9\-\/]*$')
+    ],
+  },
+  strategy({ cacheName: 'CN-nav' })
+);
+
+workbox.routing.registerRoute(
+  /^https?:\/\/[^\/]+\/[a-z0-9\-\/]+\.json$/,
+  strategy({ cacheName: 'CN-data', fetchOptions: { credentials: 'include' } })
 )
 
 workbox.routing.registerRoute(

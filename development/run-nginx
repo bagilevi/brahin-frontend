@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Runs nginx to serve the static files - useful in development.
+
+mkdir -p tmp/nginx
+cat development/nginx-template.conf | sed "s|{{PWD}}|$(pwd)|g" > tmp/nginx.conf
+
+echo "Starting Nginx..."
+exec nginx -c $(pwd)/tmp/nginx.conf

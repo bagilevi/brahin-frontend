@@ -2,7 +2,7 @@ console.log('core module loaded');
 
 define(['jquery'], ($) => {
   const Memonite = window.Memonite = {
-    VERSION: '0.2.1',
+    VERSION: '{{VERSION}}',
     editors: [],
     loadScript,
     loadCss,
@@ -33,8 +33,10 @@ define(['jquery'], ($) => {
   const serviceWorkerActivated = new Promise(resolve => resolveServiceWorkerActivated = resolve)
 
   // Service Worker registration
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
+  function initServiceWorker() {
+    console.log('SW-r: init')
+    if ('serviceWorker' in navigator) {
+      console.log('SW-r: supported')
       const swUrl = `/memonite-service-worker-v${Memonite.VERSION}.js`
       window.unregister = () => {
         navigator.serviceWorker
@@ -71,11 +73,12 @@ define(['jquery'], ($) => {
         .catch(error => {
           console.error('SW-r: registration failed', error)
         })
-    })
+    }
   }
 
   $(document).ready(() => {
     window.authenticityToken = $('meta[name=csrf-token]').attr('content')
+    initServiceWorker()
     Promise.all([
       loadPluginScript('memonite-ui',      Memonite.VERSION),
       loadPluginScript('memonite-linking', Memonite.VERSION),
