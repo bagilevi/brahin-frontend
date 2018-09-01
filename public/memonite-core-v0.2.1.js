@@ -75,6 +75,7 @@ define(['jquery'], ($) => {
   }
 
   $(document).ready(() => {
+    window.authenticityToken = $('meta[name=csrf-token]').attr('content')
     Promise.all([
       loadPluginScript('memonite-ui',      Memonite.VERSION),
       loadPluginScript('memonite-linking', Memonite.VERSION),
