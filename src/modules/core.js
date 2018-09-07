@@ -133,10 +133,12 @@ define(['jquery'], ($) => {
     console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
     require([scriptUrl], (editorLoader) => {
-      console.log('editorLoader', editorLoader)
+      if (!editorLoader) {
+        throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
+      }
       const editor = editorLoader(Memonite)
       if (!editor) {
-        throw new Error(`Script loaded from "${resource.editor_url}" expected to define editor "${resource.editor}"`)
+        throw new Error(`Script loaded from "${scriptUrl}" expected to define editor "${resource.editor}"`)
       }
       const changeReceiver = Memonite.storage.createEditorChangeReceiver(resource);
       editor.init(el, changeReceiver);
