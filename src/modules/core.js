@@ -29,56 +29,8 @@ define(['jquery'], ($) => {
     msgEl.on('click', () => msgEl.remove())
   }
 
-  var resolveServiceWorkerActivated
-  const serviceWorkerActivated = new Promise(resolve => resolveServiceWorkerActivated = resolve)
-
-  // Service Worker registration
-  function initServiceWorker() {
-    console.log('SW-r: init')
-    if ('serviceWorker' in navigator) {
-      console.log('SW-r: supported')
-      const swUrl = `/memonite-service-worker-v${Memonite.VERSION}.js`
-      window.unregister = () => {
-        navigator.serviceWorker
-          .ready
-          .then(registration => {
-            this.swReg = registration
-            registration.unregister()
-            console.log('SW-r: unregistered', registration)
-          })
-      }
-      console.log('SW-r: registering', swUrl)
-      navigator.serviceWorker
-        .register(swUrl)
-        .then(registration => {
-          console.log('SW-r: registered', registration)
-          window.swReg = registration
-          registration.onupdatefound = () => {
-            const installingWorker = registration.installing;
-            installingWorker.onstatechange = () => {
-              console.log('SW-r:', installingWorker.state)
-              if (installingWorker.state === 'installed') {
-                if (navigator.serviceWorker.controller) {
-                  console.log('SW-r: New content is available; please refresh.');
-                } else {
-                  console.log('SW-r: Content is cached for offline use.');
-                }
-              }
-              else if (installingWorker.state === 'activated') {
-                resolveServiceWorkerActivated()
-              }
-            }
-          }
-        })
-        .catch(error => {
-          console.error('SW-r: registration failed', error)
-        })
-    }
-  }
-
   $(document).ready(() => {
     window.authenticityToken = $('meta[name=csrf-token]').attr('content')
-    initServiceWorker()
     Promise.all([
       loadPluginScript('memonite-ui',      Memonite.VERSION),
       loadPluginScript('memonite-linking', Memonite.VERSION),
@@ -106,12 +58,6 @@ define(['jquery'], ($) => {
         body: el.html(),
       }
       initResourceEditor(resource, el)
-
-      // Prime the cache
-      serviceWorkerActivated.then(() => {
-        console.log('priming cache for', window.location.href)
-        Memonite.storage.getResource(window.location.href)
-      })
     }
     else {
       // In case the document is the _spa_dummy, i.e. it doesn't contain content
