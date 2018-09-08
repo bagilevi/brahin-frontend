@@ -15,6 +15,7 @@ define(['jquery'], ($) => {
   }
 
   const { display } = Memonite;
+  var startupTimePrinted = false
 
   window.onerror = function(message, url, lineNumber) {
     showError(message)
@@ -88,6 +89,10 @@ define(['jquery'], ($) => {
       }
       const changeReceiver = Memonite.storage.createEditorChangeReceiver(resource);
       editor.init(el, changeReceiver);
+      if (MEMONITE_START_TIME && !startupTimePrinted) {
+        console.log('Editor loaded in', performance.now() - MEMONITE_START_TIME, 'ms')
+        startupTimePrinted = true
+      }
     })
   }
 
