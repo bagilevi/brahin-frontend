@@ -142,7 +142,7 @@ define(['jquery'], ($) => {
   function buildPluginUrl(name, version, type) {
     const ver = version ? `-v${version}` : ''
     const ext = type ? `.${type}` : ''
-    return `/${name}${ver}${ext}`
+    return `${MEMONITE_PLUGIN_PATH}/${name}${ver}${ext}`
   }
 
   function loadPluginCss(name, version) {

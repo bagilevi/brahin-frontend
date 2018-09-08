@@ -1,6 +1,6 @@
 console.log('ui module loaded');
 
-define(['jquery', '/jquery-ui/jquery-ui.min.js'], ($, jui) => ((Memonite) => {
+define(['jquery', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'], ($, jui) => ((Memonite) => {
   const { loadScript, loadCss, loadPluginCss } = Memonite;
   const ui = Memonite.ui = {
     prompt,
