@@ -12,10 +12,8 @@ BACKEND_DEV_VERSION_FILE = '../backend/tmp/VERSION'
 
 version = File.read(VERSION_FILE).strip
 
-if BUILD_ENV == 'dev'
-  checksum = Digest::MD5.hexdigest(`find src/modules | xargs shasum`)
-  version = "#{version}+#{checksum[0..5]}"
-end
+checksum = Digest::MD5.hexdigest(`find src/modules | xargs shasum`)
+version = "#{version}+#{checksum[0..5]}"
 
 File.open(BACKEND_DEV_VERSION_FILE, 'w') { |f| f.puts version }
 

@@ -8,8 +8,7 @@ require.config({
     'pouchdb': '//cdn.jsdelivr.net/npm/pouchdb@7.0.0/dist/pouchdb.min',
   }
 })
-console.log('BRAHIN_VERSION', BRAHIN_VERSION)
 
-define([`${BRAHIN_FRONTEND_URL}/brahin-core-v${BRAHIN_VERSION}.js`], (coreFn) => {
+define([`${BRAHIN_FRONTEND_URL}/brahin-core-v{{VERSION}}.js`], (coreFn) => {
   coreFn()
 })
