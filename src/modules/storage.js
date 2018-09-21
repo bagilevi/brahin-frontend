@@ -1,10 +1,8 @@
 // Code related to saving to storage.
 
-if (typeof define !== 'function') {
-  var define = require('amdefine')(module);
-}
+const initializeStrategy = require('./storage/initializeStrategy')
 
-define((require, exports, module) => ((Memonite) => {
+module.exports = (Memonite) => {
   const storage = Memonite.storage = {
     load,
     save,
@@ -15,41 +13,11 @@ define((require, exports, module) => ((Memonite) => {
   const { loadPluginScript } = Memonite
   var strategies = {}
 
-  function initializeStrategy(key) {
-    return new Promise((resolve, reject) => {
-      const [stratType, ...stratArgs] = key.split(':')
-
-      switch (stratType) {
-        case 'local':
-          return loadPluginScript('memonite-pouchdb-storage', Memonite.VERSION)
-            .then((PouchDBStrategy) => {
-              const [databaseName, ] = stratArgs
-              const testing = (typeof global !== 'undefined') && global.test
-              strategy = new PouchDBStrategy(testing ? 'memory' : 'idb', databaseName)
-              resolve(strategy)
-            })
-            .catch(reject)
-
-        case 'backend':
-          return loadPluginScript('memonite-backend-storage', Memonite.VERSION)
-            .then((BackendStrategy) => {
-              strategy = new BackendStrategy()
-              resolve(strategy)
-            })
-            .catch(reject)
-
-        default:
-          reject(`Cannot find storage strategy for ${key}`)
-      }
-    })
-  }
-
-
   function getStrategy(key) {
     var strategyProps = strategies[key]
     if (!strategyProps) {
       strategyProps = strategies[key] = {
-        promise: initializeStrategy(key)
+        promise: initializeStrategy(key, Memonite)
       }
     }
     if (strategyProps.strategy) {
@@ -252,4 +220,4 @@ define((require, exports, module) => ((Memonite) => {
   }
 
   return storage
-}))
+}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./development/build.rb
+./development/build.rb dev
 
 echo "Watching files for changes..."
 fswatch -o -r src/modules -l 0.1 | xargs -n1 -I{} ./development/build.rb

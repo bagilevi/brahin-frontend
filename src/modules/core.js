@@ -1,6 +1,6 @@
-console.log('core module loaded');
+const $ = require('jquery')
 
-define(['jquery'], ($) => {
+module.exports = () => {
   const Memonite = window.Memonite = {
     VERSION: '{{VERSION}}',
     editors: [],
@@ -179,4 +179,4 @@ define(['jquery'], ($) => {
     // return `/plugin?name=${editor}&url=${editor_url}&type=js`
   }
 
-})
+}

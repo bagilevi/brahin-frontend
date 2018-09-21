@@ -1,10 +1,7 @@
-if (typeof define !== 'function') {
-  var define = require('amdefine')(module);
-}
+const _ = require('lodash')
+const PouchDB = require('pouchdb')
 
-define(['lodash', 'pouchdb'], (_, PouchDB) => (() => {
-  // const pouchdbStorage = Memonite.storage = {
-  // };
+module.exports = (Memonite) => {
   class PouchDBStrategy {
     // private db
     // private remotedb
@@ -159,4 +156,4 @@ define(['lodash', 'pouchdb'], (_, PouchDB) => (() => {
   }
 
   return PouchDBStrategy
-}))
+}
