@@ -1,7 +1,7 @@
 const $ = require('jquery')
 
 module.exports = () => {
-  const Memonite = window.Memonite = {
+  const Brahin = window.Brahin = {
     VERSION: '{{VERSION}}',
     editors: [],
     loadScript,
@@ -13,13 +13,14 @@ module.exports = () => {
     require,
     showError,
   }
+  window.Memonite = Brahin // backward-compatibility
 
-  const { display } = Memonite;
+  const { display } = Brahin;
   var startupTimePrinted = false
 
-  Memonite.defaultResource = {
+  Brahin.defaultResource = {
     body: '<h1></h1><p></p>',
-    editor: 'memonite-slate-editor-v1',
+    editor: 'brahin-slate-editor',
   }
 
   window.onerror = function(message, url, lineNumber) {
@@ -39,10 +40,10 @@ module.exports = () => {
     window.authenticityToken = $('meta[name=csrf-token]').attr('content')
     // initServiceWorker()
     Promise.all([
-      loadPluginScript('memonite-ui',      Memonite.VERSION),
-      loadPluginScript('memonite-linking', Memonite.VERSION),
-      loadPluginScript('memonite-spa',     Memonite.VERSION),
-      loadPluginScript('memonite-storage', Memonite.VERSION),
+      loadPluginScript('brahin-ui',      Brahin.VERSION),
+      loadPluginScript('brahin-linking', Brahin.VERSION),
+      loadPluginScript('brahin-spa',     Brahin.VERSION),
+      loadPluginScript('brahin-storage', Brahin.VERSION),
     ]).then(() => {
       console.log('core scripts loaded')
       initResourceEditorFromDocument()
@@ -74,10 +75,10 @@ module.exports = () => {
 
   function initResourceEditorFromLocation() {
     console.log('initResourceEditorFromLocation')
-    Memonite.storage.load(location.href)
+    Brahin.storage.load(location.href)
       .then(resource => {
         console.log('resource loaded', resource)
-        Memonite.spa.showResource(resource)
+        Brahin.spa.showResource(resource)
       })
       .catch(err => {
         console.error('Cannot initialize editor because could not get resource from storage', err)
@@ -87,19 +88,19 @@ module.exports = () => {
   function initResourceEditor(resource, el) {
     console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
-    Memonite.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
+    Brahin.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
     require([scriptUrl], (editorLoader) => {
       if (!editorLoader) {
         throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
       }
-      const editor = editorLoader(Memonite)
+      const editor = editorLoader(Brahin)
       if (!editor) {
         throw new Error(`Script loaded from "${scriptUrl}" expected to define editor "${resource.editor}"`)
       }
-      const changeReceiver = Memonite.storage.createEditorChangeReceiver(resource);
+      const changeReceiver = Brahin.storage.createEditorChangeReceiver(resource);
       editor.init(el, changeReceiver);
-      if (MEMONITE_START_TIME && !startupTimePrinted) {
-        console.log('Editor loaded in', performance.now() - MEMONITE_START_TIME, 'ms')
+      if (BRAHIN_START_TIME && !startupTimePrinted) {
+        console.log('Editor loaded in', performance.now() - BRAHIN_START_TIME, 'ms')
         startupTimePrinted = true
       }
     })
@@ -141,7 +142,7 @@ module.exports = () => {
       const url = buildPluginUrl(name, version, 'js')
       require([url], (result) => {
         console.log('loadPluginScript', name, '=> ', result)
-        const innerResult = result(Memonite);
+        const innerResult = result(Brahin);
         resolve(innerResult);
       })
     })
@@ -150,7 +151,7 @@ module.exports = () => {
   function buildPluginUrl(name, version, type) {
     const ver = version ? `-v${version}` : ''
     const ext = type ? `.${type}` : ''
-    return `${MEMONITE_PLUGIN_PATH}/${name}${ver}${ext}`
+    return `${BRAHIN_FRONTEND_URL}/${name}${ver}${ext}`
   }
 
   function loadPluginCss(name, version) {

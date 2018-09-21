@@ -1,15 +1,15 @@
 console.log('init loaded');
 
 require.config({
-  baseUrl: MEMONITE_PLUGIN_PATH,
+  baseUrl: BRAHIN_FRONTEND_URL,
   paths: {
     'jquery': 'https://code.jquery.com/jquery-3.3.1.min',
     'lodash': 'https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min',
     'pouchdb': '//cdn.jsdelivr.net/npm/pouchdb@7.0.0/dist/pouchdb.min',
   }
 })
-console.log('MEMONITE_VERSION', MEMONITE_VERSION)
+console.log('BRAHIN_VERSION', BRAHIN_VERSION)
 
-define([`${MEMONITE_PLUGIN_PATH}/memonite-core-v${MEMONITE_VERSION}.js`], (coreFn) => {
+define([`${BRAHIN_FRONTEND_URL}/brahin-core-v${BRAHIN_VERSION}.js`], (coreFn) => {
   coreFn()
 })

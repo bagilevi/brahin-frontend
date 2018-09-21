@@ -1,12 +1,12 @@
-module.exports = function(key, Memonite) {
-  const { loadPluginScript, VERSION } = Memonite
+module.exports = function(key, Brahin) {
+  const { loadPluginScript, VERSION } = Brahin
 
   return new Promise((resolve, reject) => {
     const [stratType, ...stratArgs] = key.split(':')
 
     switch (stratType) {
       case 'local':
-        return loadPluginScript('memonite-pouchdb-storage', VERSION)
+        return loadPluginScript('brahin-pouchdb-storage', VERSION)
           .then((PouchDBStrategy) => {
             const [databaseName, ] = stratArgs
             const testing = (typeof global !== 'undefined') && global.test
@@ -16,7 +16,7 @@ module.exports = function(key, Memonite) {
           .catch(reject)
 
       case 'backend':
-        return loadPluginScript('memonite-backend-storage', VERSION)
+        return loadPluginScript('brahin-backend-storage', VERSION)
           .then((BackendStrategy) => {
             strategy = new BackendStrategy()
             resolve(strategy)

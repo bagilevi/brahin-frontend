@@ -1,11 +1,11 @@
 console.log('ui module loaded');
 
-define(['jquery', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'], ($, jui) => ((Memonite) => {
-  const { loadScript, loadCss, loadPluginCss } = Memonite;
-  const ui = Memonite.ui = {
+define(['jquery', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'], ($, jui) => ((Brahin) => {
+  const { loadScript, loadCss, loadPluginCss } = Brahin;
+  const ui = Brahin.ui = {
     prompt,
   };
-  loadPluginCss('memonite-ui', Memonite.VERSION)
+  loadPluginCss('brahin-ui', Brahin.VERSION)
 
   loadJqueryUi().then(() => {
     // openSampleDialog()
@@ -28,8 +28,8 @@ define(['jquery', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'], ($, jui
     dialogEl.dialog({
       autoOpen: false,
       classes: {
-        "ui-dialog": "ui-memonite",
-        "ui-dialog-titlebar": "ui-memonite",
+        "ui-dialog": "ui-brahin",
+        "ui-dialog-titlebar": "ui-brahin",
       }
     })
     dialogEl.dialog('open')
@@ -65,8 +65,8 @@ define(['jquery', 'https://code.jquery.com/ui/1.12.1/jquery-ui.min.js'], ($, jui
         autoOpen: false,
         modal: true,
         classes: {
-          "ui-dialog": "ui-memonite ui-memonite-prompt-dialog",
-          "ui-dialog-titlebar": "ui-memonite  ui-memonite-prompt-titlebar",
+          "ui-dialog": "ui-brahin ui-brahin-prompt-dialog",
+          "ui-dialog-titlebar": "ui-brahin  ui-brahin-prompt-titlebar",
         }
       })
       dialog.dialog('open')

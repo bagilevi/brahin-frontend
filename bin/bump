@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 VERSION_FILE = 'src/VERSION'
-BACKEND_VERSION_FILE = '../main/VERSION'
+BACKEND_VERSION_FILE = '../backend/VERSION'
 
 def bump_part(part)
   items = part.split('.')

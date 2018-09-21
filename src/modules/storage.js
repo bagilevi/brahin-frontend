@@ -2,22 +2,22 @@
 
 const initializeStrategy = require('./storage/initializeStrategy')
 
-module.exports = (Memonite) => {
-  const storage = Memonite.storage = {
+module.exports = (Brahin) => {
+  const storage = Brahin.storage = {
     load,
     save,
     createNX,
     createEditorChangeReceiver,
   };
 
-  const { loadPluginScript } = Memonite
+  const { loadPluginScript } = Brahin
   var strategies = {}
 
   function getStrategy(key) {
     var strategyProps = strategies[key]
     if (!strategyProps) {
       strategyProps = strategies[key] = {
-        promise: initializeStrategy(key, Memonite)
+        promise: initializeStrategy(key, Brahin)
       }
     }
     if (strategyProps.strategy) {
@@ -42,7 +42,7 @@ module.exports = (Memonite) => {
       .catch(err => {
         // Auto-create resource when navigating to a non-existet path
         if (err.error === 'not_found') {
-          const resource = _.assign({}, Memonite.defaultResource)
+          const resource = _.assign({}, Brahin.defaultResource)
           decorateResourceWithLocator(resource, locator)
           resolve(resource)
         }

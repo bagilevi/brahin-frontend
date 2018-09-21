@@ -6,10 +6,10 @@
 // It keeps the initialized editors in the DOM and hides them when we navigate away,
 // and shows them again when navigate back.
 
-define((require, exports, module) => ((Memonite) => {
-  const { initResourceEditor } = Memonite;
+define((require, exports, module) => ((Brahin) => {
+  const { initResourceEditor } = Brahin;
   const swapper = new Swapper();
-  const spa = Memonite.spa = {
+  const spa = Brahin.spa = {
     showResource,
     hideCurrentResource,
   };
@@ -34,7 +34,7 @@ define((require, exports, module) => ((Memonite) => {
     swapper.show(resource.url, (el) => {
       // Callback to initialize the DOM element if wasn't in the cache
       el.html(resource.body)
-      document.title = resource.title || 'Memonite'; // FIXME
+      document.title = resource.title || 'Brahin'; // FIXME
       initResourceEditor(resource, el)
     })
   }
@@ -53,7 +53,7 @@ define((require, exports, module) => ((Memonite) => {
       var el = cache[key]
       if (el) {
         console.log('resource element found in cache')
-        document.title = el.find('h1').first().text() || 'Memonite'; // FIXME
+        document.title = el.find('h1').first().text() || 'Brahin'; // FIXME
         el.addClass('m-resource').show()
       }
       else {

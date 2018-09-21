@@ -1,6 +1,6 @@
 console.log('backend-storage module loaded');
 
-define(['jquery'], ($) => ((Memonite) => {
+define(['jquery'], ($) => ((Brahin) => {
   class BackendStrategy {
 
     /**
@@ -30,7 +30,7 @@ define(['jquery'], ($) => ((Memonite) => {
           },
           error: (err) => {
             console.error('error while saving', err);
-            Memonite.showError(`Error while saving ${resource.path}`)
+            Brahin.showError(`Error while saving ${resource.path}`)
             reject(err);
           },
         })

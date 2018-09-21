@@ -1,21 +1,21 @@
-.ui-dialog.ui-widget.ui-widget-content.ui-memonite {
+.ui-dialog.ui-widget.ui-widget-content.ui-brahin {
   border: none;
   padding: 0;
   box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
   border-radius: 3px;
 }
-.ui-dialog-titlebar.ui-memonite { border: none; border-radius: 0; }
+.ui-dialog-titlebar.ui-brahin { border: none; border-radius: 0; }
 
-.ui-memonite-prompt-dialog .ui-dialog-content {
+.ui-brahin-prompt-dialog .ui-dialog-content {
   display: flex;
   align-items: stretch;
 }
-.ui-memonite-prompt-dialog .ui-dialog-content > form {
+.ui-brahin-prompt-dialog .ui-dialog-content > form {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
 }
-.ui-memonite-prompt-dialog .ui-dialog-content > form .buttons {
+.ui-brahin-prompt-dialog .ui-dialog-content > form .buttons {
   text-align: right;
 }

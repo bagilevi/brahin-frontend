@@ -7,19 +7,19 @@
 #
 # Usage (normally used part of the build script ./src/build.rb):
 #
-#     ./bin/build-file 0.2.194 < src/modules/storage.js > dist/public/memonite-storage-v0.2.194.js
+#     ./bin/build-file 0.2.194 < src/modules/storage.js > dist/public/brahin-storage-v0.2.194.js
 #
 # Example input:
 #
 #     const _ = require('lodash')
 #     const PouchDB = require('PouchDB')
-#     module.exports = (Memonite) => {
+#     module.exports = (Brahin) => {
 #        // ...
 #     }
 #
 # Example output:
 #
-#     define(["lodash","PouchDB"], (_, PouchDB) => ((Memonite) => {
+#     define(["lodash","PouchDB"], (_, PouchDB) => ((Brahin) => {
 #       // ...
 #     }))
 

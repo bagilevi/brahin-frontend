@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const PouchDB = require('pouchdb')
 
-module.exports = (Memonite) => {
+module.exports = (Brahin) => {
   class PouchDBStrategy {
     // private db
     // private remotedb
@@ -15,7 +15,7 @@ module.exports = (Memonite) => {
      * adapter - the PouchDB adapter – 'idb', 'memory'
      * name
      */
-    constructor(adapter = 'idb', name = 'memonite', opts = {}) {
+    constructor(adapter = 'idb', name = 'brahin', opts = {}) {
       this.adapter = adapter
       this.name = name
       this.opts = opts

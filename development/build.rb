@@ -8,7 +8,7 @@ VERSION_FILE = 'src/VERSION'
 SOURCE_DIR = 'src/modules'
 TARGET_DIR = BUILD_ENV == 'dev' ? 'tmp/development/public' : '../homepage/public_html/modules'
 RELEASE_COMMAND = '../homepage/bin/release'
-BACKEND_DEV_VERSION_FILE = '../main/tmp/VERSION'
+BACKEND_DEV_VERSION_FILE = '../backend/tmp/VERSION'
 
 version = File.read(VERSION_FILE).strip
 
@@ -44,7 +44,7 @@ Dir["#{SOURCE_DIR}/*"].each do |fn|
     end
   end
 
-  target_fns = versions.map { |v|  "#{TARGET_DIR}/memonite-#{base}-v#{v}#{ext}" }
+  target_fns = versions.map { |v|  "#{TARGET_DIR}/brahin-#{base}-v#{v}#{ext}" }
   target_fns.each do |target_fn|
     puts "Process: #{fn} -> #{target_fn}"
 

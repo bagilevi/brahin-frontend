@@ -1,5 +1,5 @@
-define((require, exports, module) => ((Memonite) => {
-  const linking = Memonite.linking = {
+define((require, exports, module) => ((Brahin) => {
+  const linking = Brahin.linking = {
     followLink,
     getLinkPropertiesForInsertion,
   };
@@ -21,7 +21,7 @@ define((require, exports, module) => ((Memonite) => {
       window.open(link.href);
       return;
     }
-    if (!Memonite.spa) {
+    if (!Brahin.spa) {
       console.warn('spa not defined => followLink reverting to page load')
       location.href = link.href;
       return;
@@ -34,20 +34,20 @@ define((require, exports, module) => ((Memonite) => {
 
   function replaceResourceByCurrentLocation() {
     // Load resource from the backend // TODO: or cache
-    Memonite.spa.hideCurrentResource()
-    Memonite.storage.load(location.href)
+    Brahin.spa.hideCurrentResource()
+    Brahin.storage.load(location.href)
       .then((resource) => {
-        Memonite.spa.showResource(resource)
+        Brahin.spa.showResource(resource)
       })
       .catch(err => {
         console.error('Could not show resource', err)
-        Memonite.showError(`Error while loading ${location.href}`)
+        Brahin.showError(`Error while loading ${location.href}`)
       })
   }
 
   function onPopState(stateObj) {
     console.log('popState', stateObj)
-    if (!Memonite.spa) {
+    if (!Brahin.spa) {
       console.warn('spa not defined => onPopState reverting to page load')
       location.href = location.href;
       return;
@@ -58,7 +58,7 @@ define((require, exports, module) => ((Memonite) => {
   function getLinkPropertiesForInsertion() {
     return new Promise((resolve, reject) => {
       var label;
-      Memonite.ui.prompt('Link label or URL:').then((label) => {
+      Brahin.ui.prompt('Link label or URL:').then((label) => {
         if (!label || label === '') return;
 
         if (isUrl(label)) {
@@ -71,7 +71,7 @@ define((require, exports, module) => ((Memonite) => {
         const defaultHref = generateDefaultHref(label)
 
         // const defaultHref = `${Math.random().toString(36).substring(2)}`
-        Memonite.ui.prompt('Target URL or href', defaultHref).then((href) => {
+        Brahin.ui.prompt('Target URL or href', defaultHref).then((href) => {
           resolve({
             label: label,
             href: href,
@@ -83,8 +83,8 @@ define((require, exports, module) => ((Memonite) => {
 
   function generateDefaultHref(label) {
     const slug = label.toLowerCase().replace(/[^a-z0-9-]/g, '-')
-    if (Memonite.linkBase) {
-      return `${Memonite.linkBase}${slug}`
+    if (Brahin.linkBase) {
+      return `${Brahin.linkBase}${slug}`
     }
     else {
       return `/${slug}`
@@ -92,7 +92,7 @@ define((require, exports, module) => ((Memonite) => {
   }
 
   function createResourceNX(href, title) {
-    return Memonite.storage.createNX(href, _.assign({}, Memonite.defaultResource, { title: title }))
+    return Brahin.storage.createNX(href, _.assign({}, Brahin.defaultResource, { title: title }))
   }
 
   function logError(err, reject) {
