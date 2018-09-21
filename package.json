@@ -1,0 +1,19 @@
+{
+  "name": "memonite-frontend",
+  "version": "0.2.3",
+  "description": "",
+  "licence": "MIT",
+  "private": true,
+  "scripts": {
+    "test": "jest --watch"
+  },
+  "devDependencies": {
+    "amdefine": "^1.0.1",
+    "jest": "^23.6.0",
+    "requirejs": "^2.3.6"
+  },
+  "dependencies": {
+    "pouchdb": "^7.0.0",
+    "pouchdb-adapter-memory": "^7.0.0"
+  }
+}

@@ -17,6 +17,11 @@ define(['jquery'], ($) => {
   const { display } = Memonite;
   var startupTimePrinted = false
 
+  Memonite.defaultResource = {
+    body: '<h1></h1><p></p>',
+    editor: 'memonite-slate-editor-v1',
+  }
+
   window.onerror = function(message, url, lineNumber) {
     showError(message)
   }
@@ -32,6 +37,7 @@ define(['jquery'], ($) => {
 
   $(document).ready(() => {
     window.authenticityToken = $('meta[name=csrf-token]').attr('content')
+    // initServiceWorker()
     Promise.all([
       loadPluginScript('memonite-ui',      Memonite.VERSION),
       loadPluginScript('memonite-linking', Memonite.VERSION),
@@ -67,8 +73,10 @@ define(['jquery'], ($) => {
   }
 
   function initResourceEditorFromLocation() {
-    Memonite.storage.getResource(location.href)
+    console.log('initResourceEditorFromLocation')
+    Memonite.storage.load(location.href)
       .then(resource => {
+        console.log('resource loaded', resource)
         Memonite.spa.showResource(resource)
       })
       .catch(err => {
@@ -79,6 +87,7 @@ define(['jquery'], ($) => {
   function initResourceEditor(resource, el) {
     console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
+    Memonite.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
     require([scriptUrl], (editorLoader) => {
       if (!editorLoader) {
         throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
@@ -95,7 +104,6 @@ define(['jquery'], ($) => {
       }
     })
   }
-
 
   var scripts = {}
 
@@ -133,8 +141,8 @@ define(['jquery'], ($) => {
       const url = buildPluginUrl(name, version, 'js')
       require([url], (result) => {
         console.log('loadPluginScript', name, '=> ', result)
-        result(Memonite);
-        resolve();
+        const innerResult = result(Memonite);
+        resolve(innerResult);
       })
     })
   }

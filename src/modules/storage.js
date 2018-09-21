@@ -1,53 +1,104 @@
 // Code related to saving to storage.
-console.log('storage module loaded');
+
+if (typeof define !== 'function') {
+  var define = require('amdefine')(module);
+}
 
 define((require, exports, module) => ((Memonite) => {
   const storage = Memonite.storage = {
-    getResource,
+    load,
+    save,
+    createNX,
     createEditorChangeReceiver,
   };
 
-  const unsavedChanges = new Set();
+  const { loadPluginScript } = Memonite
+  var strategies = {}
 
-  function normalizeUrl(url) {
-    return url.replace(/^(https?:\/\/[^\/]+)?\/$/, '$1/home') + '.json'
+  function initializeStrategy(key) {
+    return new Promise((resolve, reject) => {
+      const [stratType, ...stratArgs] = key.split(':')
+
+      switch (stratType) {
+        case 'local':
+          return loadPluginScript('memonite-pouchdb-storage', Memonite.VERSION)
+            .then((PouchDBStrategy) => {
+              const [databaseName, ] = stratArgs
+              const testing = (typeof global !== 'undefined') && global.test
+              strategy = new PouchDBStrategy(testing ? 'memory' : 'idb', databaseName)
+              resolve(strategy)
+            })
+            .catch(reject)
+
+        case 'backend':
+          return loadPluginScript('memonite-backend-storage', Memonite.VERSION)
+            .then((BackendStrategy) => {
+              strategy = new BackendStrategy()
+              resolve(strategy)
+            })
+            .catch(reject)
+
+        default:
+          reject(`Cannot find storage strategy for ${key}`)
+      }
+    })
   }
 
-  function getResource(url) {
 
-    // /    => /home.json
-    // /etc => /etc.json
-    const requestUrl = normalizeUrl(url)
+  function getStrategy(key) {
+    var strategyProps = strategies[key]
+    if (!strategyProps) {
+      strategyProps = strategies[key] = {
+        promise: initializeStrategy(key)
+      }
+    }
+    if (strategyProps.strategy) {
+      return Promise.resolve(strategyProps.strategy)
+    } else {
+      return strategyProps.promise
+    }
+  }
 
+  const unsavedChanges = new Set();
+
+  function load(url) {
     return new Promise((resolve, reject) => {
-      fetch(requestUrl)
-        .then(response => {
-          if (response.status !== 200) {
-            const errorMessage = `Request to ${requestUrl} returned HTTP ${response.status}`
-            console.error(errorMessage, response)
-            reject(errorMessage)
-            return
-          }
-          console.log('got response', response)
-          response.text()
-            .then(text => {
-              console.log('response body', text)
-              const resource = JSON.parse(text)
-              resource.url = url
-              console.log('Resource fetch successful', resource)
-              resolve(resource)
-            })
-            .catch(err => {
-              const errorMessage = `Error decoding response from ${requestUrl}`
-              console.error(errorMessage, err)
-              reject(errorMessage)
-            })
-        })
-        .catch(err => {
-          const errorMessage = `Error fetching ${url}`
-          console.error(errorMessage, err)
-          reject(errorMessage)
-        })
+      const locator = new Locator(url)
+      getStrategy(locator.strategyKey).then((strategy) => {
+        return strategy.load(locator)
+      })
+      .then(resource => {
+        decorateResourceWithLocator(resource, locator)
+        resolve(resource)
+      })
+      .catch(err => {
+        // Auto-create resource when navigating to a non-existet path
+        if (err.error === 'not_found') {
+          const resource = _.assign({}, Memonite.defaultResource)
+          decorateResourceWithLocator(resource, locator)
+          resolve(resource)
+        }
+        else {
+          reject(err)
+        }
+      })
+    })
+  }
+
+  function save(resource, updatedAttributes) {
+    const locator = new Locator(resource.url)
+    return getStrategy(locator.strategyKey).then((strategy) => {
+      resource.id = locator.id
+      return strategy.save(resource, updatedAttributes)
+    })
+  }
+
+  function createNX(url, newAttributes) {
+    const locator = new Locator(url)
+    return getStrategy(locator.strategyKey).then((strategy) => {
+      const resource = _.assign({}, newAttributes)
+      decorateResourceWithLocator(resource, locator)
+      return strategy.create(resource)
     })
   }
 
@@ -76,7 +127,7 @@ define((require, exports, module) => ((Memonite) => {
         resource.body = newBody;
         if (newTitle) resource.title = newTitle;
         document.title = resource.title; // TODO: if this resource is current
-        return saveResource(resource, resource)
+        return save(resource, resource)
       }
       return Promise.resolve();
     }
@@ -158,29 +209,6 @@ define((require, exports, module) => ((Memonite) => {
     }
   }; // end of debounceChange
 
-  function saveResource(resource, updatedAttributes) {
-    return new Promise((resolve, reject) => {
-      const data = _.assign({ authenticity_token: authenticityToken }, updatedAttributes)
-
-      const requestUrl = normalizeUrl(resource.url || resource.path)
-
-      $.ajax({
-        url: requestUrl,
-        method: 'patch',
-        data: data,
-        success: () => {
-          console.log('saved successfully');
-          resolve();
-        },
-        error: (err) => {
-          console.error('error while saving', err);
-          Memonite.showError(`Error while saving ${resource.path}`)
-          reject(err);
-        },
-      })
-    })
-  }
-
   var lastChangeId = 0;
   function generateChangeId() {
     return ++lastChangeId;
@@ -195,4 +223,33 @@ define((require, exports, module) => ((Memonite) => {
       };
     }
   }
+
+  function Locator(url) {
+    if (url.startsWith('/')) url = location.origin + url
+    var [, protocol, realm, path] = url.match(/^([^:]+:)\/\/([^\/]+)(.*)$/)
+    var database, id
+
+    const localMatch = path.match(/^\/_local(\/([^\/]+)\/([^\/]+))?\/?$/)
+    if (localMatch) {
+      ;[,, database, id] = localMatch
+      if (!database) database = 'main'
+      if (!id) id = 'main'
+      path = `/_local/${database}/${id}`
+      url = `${protocol}//${realm}${path}`
+    }
+
+    this.id = id
+    this.path = path
+    this.url = url
+    this.strategyKey = localMatch ? `local:${database}` : `backend:${realm}`
+  }
+
+  function decorateResourceWithLocator(resource, locator) {
+    if (!resource.id) resource.id = locator.id
+    if (!resource.url) resource.url = locator.url
+    if (!resource.path) resource.path = locator.path
+    return resource
+  }
+
+  return storage
 }))

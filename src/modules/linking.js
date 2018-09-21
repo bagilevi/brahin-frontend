@@ -1,5 +1,3 @@
-console.log('linking module loaded');
-
 define((require, exports, module) => ((Memonite) => {
   const linking = Memonite.linking = {
     followLink,
@@ -37,7 +35,7 @@ define((require, exports, module) => ((Memonite) => {
   function replaceResourceByCurrentLocation() {
     // Load resource from the backend // TODO: or cache
     Memonite.spa.hideCurrentResource()
-    Memonite.storage.getResource(location.href)
+    Memonite.storage.load(location.href)
       .then((resource) => {
         Memonite.spa.showResource(resource)
       })
@@ -70,7 +68,8 @@ define((require, exports, module) => ((Memonite) => {
           return;
         }
 
-        const defaultHref = `/${label.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`
+        const defaultHref = generateDefaultHref(label)
+
         // const defaultHref = `${Math.random().toString(36).substring(2)}`
         Memonite.ui.prompt('Target URL or href', defaultHref).then((href) => {
           resolve({
@@ -82,27 +81,18 @@ define((require, exports, module) => ((Memonite) => {
     })
   }
 
+  function generateDefaultHref(label) {
+    const slug = label.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+    if (Memonite.linkBase) {
+      return `${Memonite.linkBase}${slug}`
+    }
+    else {
+      return `/${slug}`
+    }
+  }
+
   function createResourceNX(href, title) {
-    return new Promise((resolve, reject) => {
-      $.ajax({
-        method: 'post',
-        url: href + '.json',
-        data: { title: title, authenticity_token: authenticityToken },
-        dataType: 'json',
-        success: (resource) => {
-          resolve(resource);
-        },
-        error: (err) => {
-          // console.error('$.ajax error', err);
-          logError({
-            error: 'Could not create new resource',
-            params: { href, title },
-            reason: '$.ajax error',
-            original: err
-          }, reject)
-        }
-      })
-    })
+    return Memonite.storage.createNX(href, _.assign({}, Memonite.defaultResource, { title: title }))
   }
 
   function logError(err, reject) {
