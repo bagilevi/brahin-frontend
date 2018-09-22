@@ -47,6 +47,7 @@ module.exports = () => {
     ]).then(() => {
       console.log('core scripts loaded')
       initResourceEditorFromDocument()
+      loadPluginScript('brahin-sharing', Brahin.VERSION)
     }).catch((err) => {
       console.error('Could not load all modules, editor cannot be initialized.', err)
     })
@@ -57,14 +58,13 @@ module.exports = () => {
     console.log('initResourceEditorFromDocument')
     const el = $('.m-resource').first()
     if (el.length) {
-      const resource = {
-        id: el.data('m-id'),
-        url: window.location.href,
-        path: window.location.pathname,
-        editor: el.data('m-editor'),
-        editor_url: el.data('m-editor-url'),
-        body: el.html(),
-      }
+      const resource = el.data('attributes') || {}
+      resource.id = el.data('m-id')
+      resource.url = window.location.href.replace(/[\?#].*$/, '')
+      resource.path = window.location.pathname
+      // resource.editor = el.data('m-editor')
+      // resource.editor_url = el.data('m-editor-url')
+      resource.body = el.html()
       initResourceEditor(resource, el)
     }
     else {
@@ -86,6 +86,7 @@ module.exports = () => {
   }
 
   function initResourceEditor(resource, el) {
+    Brahin.currentResource = resource
     console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
     Brahin.linkBase = resource.path.replace(/[^\/]+$\/?/, '')

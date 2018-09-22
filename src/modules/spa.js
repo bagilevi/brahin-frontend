@@ -24,12 +24,12 @@ define((require, exports, module) => ((Brahin) => {
   }
 
   function hideCurrentResource() {
-    window.resource = null
+    Brahin.currentResource = null
     swapper.hide()
   }
 
   function showResource(resource) {
-    window.resource = resource
+    Brahin.currentResource = resource
 
     swapper.show(resource.url, (el) => {
       // Callback to initialize the DOM element if wasn't in the cache
