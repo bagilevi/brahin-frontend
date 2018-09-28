@@ -56,7 +56,7 @@ module.exports = () => {
   // Find the main resource on the page and load its editor
   function initResourceEditorFromDocument() {
     console.log('initResourceEditorFromDocument')
-    const el = $('.m-resource').first()
+    const el = $('.brahin-resource').first()
     if (el.length) {
       const resource = el.data('attributes') || {}
       resource.id = el.data('m-id')
