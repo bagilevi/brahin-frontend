@@ -89,9 +89,10 @@ module.exports = (Brahin) => {
     saveButton.on('click', (ev) => {
       ev.preventDefault()
       ev.stopPropagation()
-      console.log(state)
-      console.log(JSON.stringify(state, null, 2))
-      saveState(resource, state).then(() =>
+      var saveableState = _.compact(state)
+      console.log(saveableState)
+      console.log(JSON.stringify(saveableState, null, 2))
+      saveState(resource, saveableState).then(() =>
         dialog.dialog('close')
       )
     })
