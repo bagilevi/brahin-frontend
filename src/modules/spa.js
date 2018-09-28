@@ -7,7 +7,7 @@
 // and shows them again when navigate back.
 
 define((require, exports, module) => ((Brahin) => {
-  const { initResourceEditor } = Brahin;
+  const { initResourceDisplay } = Brahin;
   const swapper = new Swapper();
   const spa = Brahin.spa = {
     transition,
@@ -51,18 +51,18 @@ define((require, exports, module) => ((Brahin) => {
   }
 
   function hideCurrentResource() {
-    Brahin.currentResource = null
+    Brahin.dispatch('currentResourceChange', { resource: null })
     swapper.hide()
   }
 
   function showResource(resource) {
-    Brahin.currentResource = resource
+    Brahin.dispatch('currentResourceChange', { resource: resource })
 
     swapper.show(resource.url, (el) => {
       // Callback to initialize the DOM element if wasn't in the cache
       el.html(resource.body)
       document.title = resource.title || 'Brahin'; // FIXME
-      initResourceEditor(resource, el)
+      initResourceDisplay(resource, el)
     })
   }
 

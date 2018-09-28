@@ -8,16 +8,27 @@ module.exports = (Brahin) => {
   const WRITE = 3
   const ADMIN = 4
 
-  $('footer').append(
-    $('<a>').attr('href', 'javascript:').text('Share').on('click', handleShare)
+  var buttonVisible = false
+
+  $('#page-footer').append(
+    $('<a id="page-share-button">').hide().attr('href', 'javascript:').text('Share').on('click', handleShare)
   )
+  if (Brahin.currentResource) setButtonVisibility(Brahin.currentResource)
+
+  Brahin.on('currentResourceChange', (event) => setButtonVisibility(event.resource))
+
+  function setButtonVisibility(resource) {
+    const shouldBeVisible = (resource && resource.permissions && resource.permissions.admin)
+    if (shouldBeVisible && !buttonVisible) { $('#page-share-button').show(); buttonVisible = true }
+    if (!shouldBeVisible && buttonVisible) { $('#page-share-button').hide(); buttonVisible = false }
+  }
 
   function handleShare(ev) {
     ev.preventDefault()
     ev.stopPropagation()
     const resource = Brahin.currentResource
     if (!resource) throw new Error('No current resource found.')
-    if (!resource.admin) throw new Error('You are not authorized to edit sharing settings.')
+    if (!resource.permissions.admin) throw new Error('You are not authorized to edit sharing settings.')
     invokeShareDialog(resource)
   }
 

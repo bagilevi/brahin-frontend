@@ -1,4 +1,5 @@
 const $ = require('jquery')
+const EventDispatcher = require('./core/EventDispatcher')
 
 module.exports = () => {
   const Brahin = window.Brahin = {
@@ -8,7 +9,7 @@ module.exports = () => {
     loadCss,
     loadPluginScript,
     loadPluginCss,
-    initResourceEditor,
+    initResourceDisplay,
     define,
     require,
     showError,
@@ -18,10 +19,17 @@ module.exports = () => {
   const { display } = Brahin;
   var startupTimePrinted = false
 
+  const eventDispatch = new EventDispatcher()
+  const { dispatch, on } = eventDispatch
+  Brahin.dispatch = dispatch
+  Brahin.on = on
+
   Brahin.defaultResource = {
     body: '<h1></h1><p></p>',
     editor: 'brahin-slate-editor',
   }
+
+  on('currentResourceChange', (event) => Brahin.currentResource = event.resource)
 
   window.onerror = function(message, url, lineNumber) {
     showError(message)
@@ -65,7 +73,8 @@ module.exports = () => {
       // resource.editor = el.data('m-editor')
       // resource.editor_url = el.data('m-editor-url')
       resource.body = el.html()
-      initResourceEditor(resource, el)
+      dispatch('currentResourceChange', { resource: resource })
+      initResourceDisplay(resource, el)
     }
     else {
       // In case the document is the _spa_dummy, i.e. it doesn't contain content
@@ -85,9 +94,25 @@ module.exports = () => {
       })
   }
 
+  function initResourceDisplay(resource, el) {
+    if (resource.permissions && resource.permissions.write) {
+      initResourceEditor(resource, el)
+    }
+    else {
+      initResourceReader(resource, el)
+    }
+  }
+
+  function initResourceReader(resource, el) {
+    el.find('a').on('click', event => {
+      event.preventDefault()
+      const el = $(event.target)
+      console.log('link', el.attr('href'))
+      Brahin.linking.followLink({ href: el.attr('href') })
+    })
+  }
+
   function initResourceEditor(resource, el) {
-    Brahin.currentResource = resource
-    console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
     Brahin.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
     require([scriptUrl], (editorLoader) => {
