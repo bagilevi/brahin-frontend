@@ -97,7 +97,7 @@ module.exports = () => {
   }
 
   function initResourceDisplay(resource, el) {
-    if (resource.permissions && resource.permissions.write) {
+    if (isResourceEditable(resource)) {
       initResourceEditor(resource, el)
     }
     else {
@@ -206,5 +206,11 @@ module.exports = () => {
     if (!editor) throw new Error('resource does not have "editor" property')
     return buildPluginUrl(editor, null, 'js')
     // return `/plugin?name=${editor}&url=${editor_url}&type=js`
+  }
+
+  function isResourceEditable(resource) {
+    if (resource.permissions && resource.permissions.write) return true
+    if (resource.path && resource.path.match(/^\/_local(\/.*)?$/)) return true
+    return false
   }
 }

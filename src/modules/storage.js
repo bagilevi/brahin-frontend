@@ -197,12 +197,10 @@ module.exports = (Brahin) => {
     var [, protocol, realm, path] = url.match(/^([^:]+:)\/\/([^\/]+)(.*)$/)
     var database, id
 
-    const localMatch = path.match(/^\/_local(\/([^\/]+)\/([^\/]+))?\/?$/)
+    const localMatch = path.match(/^\/_local(\/.*)?$/)
     if (localMatch) {
-      ;[,, database, id] = localMatch
-      if (!database) database = 'main'
-      if (!id) id = 'main'
-      path = `/_local/${database}/${id}`
+      database = 'main'
+      id = path
       url = `${protocol}//${realm}${path}`
     }
 
