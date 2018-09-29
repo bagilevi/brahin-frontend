@@ -1,5 +1,6 @@
 const $ = require('jquery')
 const EventDispatcher = require('./core/EventDispatcher')
+const urlUtils = require('./core/urlUtils')
 
 module.exports = () => {
   const Brahin = window.Brahin = {
@@ -13,6 +14,7 @@ module.exports = () => {
     define,
     require,
     showError,
+    urlUtils,
   }
   window.Memonite = Brahin // backward-compatibility
 
@@ -114,7 +116,7 @@ module.exports = () => {
 
   function initResourceEditor(resource, el) {
     const scriptUrl = getEditorUrl(resource)
-    Brahin.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
+    Brahin.linkBase = urlUtils.addTrailingSlash(resource.path)
     require([scriptUrl], (editorLoader) => {
       if (!editorLoader) {
         throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
@@ -205,5 +207,4 @@ module.exports = () => {
     return buildPluginUrl(editor, null, 'js')
     // return `/plugin?name=${editor}&url=${editor_url}&type=js`
   }
-
 }
