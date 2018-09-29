@@ -89,7 +89,9 @@ module.exports = () => {
     Brahin.storage.load(location.href)
       .then(resource => {
         console.log('resource loaded', resource)
-        Brahin.spa.showResource(resource)
+        Brahin.spa.transition({
+          getResource: () => Promise.resolve(resource)
+        })
       })
       .catch(err => {
         console.error('Cannot initialize editor because could not get resource from storage', err)
