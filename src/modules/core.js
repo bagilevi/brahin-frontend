@@ -1,4 +1,6 @@
 const $ = require('jquery')
+const EventDispatcher = require('./core/EventDispatcher')
+const urlUtils = require('./core/urlUtils')
 
 module.exports = () => {
   const Brahin = window.Brahin = {
@@ -8,20 +10,28 @@ module.exports = () => {
     loadCss,
     loadPluginScript,
     loadPluginCss,
-    initResourceEditor,
+    initResourceDisplay,
     define,
     require,
     showError,
+    urlUtils,
   }
   window.Memonite = Brahin // backward-compatibility
 
   const { display } = Brahin;
   var startupTimePrinted = false
 
+  const eventDispatch = new EventDispatcher()
+  const { dispatch, on } = eventDispatch
+  Brahin.dispatch = dispatch
+  Brahin.on = on
+
   Brahin.defaultResource = {
     body: '<h1></h1><p></p>',
     editor: 'brahin-slate-editor',
   }
+
+  on('currentResourceChange', (event) => Brahin.currentResource = event.resource)
 
   window.onerror = function(message, url, lineNumber) {
     showError(message)
@@ -47,6 +57,7 @@ module.exports = () => {
     ]).then(() => {
       console.log('core scripts loaded')
       initResourceEditorFromDocument()
+      loadPluginScript('brahin-permissions', Brahin.VERSION)
     }).catch((err) => {
       console.error('Could not load all modules, editor cannot be initialized.', err)
     })
@@ -55,17 +66,17 @@ module.exports = () => {
   // Find the main resource on the page and load its editor
   function initResourceEditorFromDocument() {
     console.log('initResourceEditorFromDocument')
-    const el = $('.m-resource').first()
+    const el = $('.brahin-resource').first()
     if (el.length) {
-      const resource = {
-        id: el.data('m-id'),
-        url: window.location.href,
-        path: window.location.pathname,
-        editor: el.data('m-editor'),
-        editor_url: el.data('m-editor-url'),
-        body: el.html(),
-      }
-      initResourceEditor(resource, el)
+      const resource = el.data('attributes') || {}
+      resource.id = el.data('m-id')
+      resource.url = window.location.href.replace(/[\?#].*$/, '')
+      resource.path = window.location.pathname
+      // resource.editor = el.data('m-editor')
+      // resource.editor_url = el.data('m-editor-url')
+      resource.body = el.html()
+      dispatch('currentResourceChange', { resource: resource })
+      initResourceDisplay(resource, el)
     }
     else {
       // In case the document is the _spa_dummy, i.e. it doesn't contain content
@@ -78,17 +89,36 @@ module.exports = () => {
     Brahin.storage.load(location.href)
       .then(resource => {
         console.log('resource loaded', resource)
-        Brahin.spa.showResource(resource)
+        Brahin.spa.transition({
+          getResource: () => Promise.resolve(resource)
+        })
       })
       .catch(err => {
         console.error('Cannot initialize editor because could not get resource from storage', err)
       })
   }
 
+  function initResourceDisplay(resource, el) {
+    if (isResourceEditable(resource)) {
+      initResourceEditor(resource, el)
+    }
+    else {
+      initResourceReader(resource, el)
+    }
+  }
+
+  function initResourceReader(resource, el) {
+    el.find('a').on('click', event => {
+      event.preventDefault()
+      const el = $(event.target)
+      console.log('link', el.attr('href'))
+      Brahin.linking.followLink({ href: el.attr('href') })
+    })
+  }
+
   function initResourceEditor(resource, el) {
-    console.log('initResourceEditor', resource, el)
     const scriptUrl = getEditorUrl(resource)
-    Brahin.linkBase = resource.path.replace(/[^\/]+$\/?/, '')
+    Brahin.linkBase = urlUtils.addTrailingSlash(resource.path)
     require([scriptUrl], (editorLoader) => {
       if (!editorLoader) {
         throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
@@ -180,4 +210,9 @@ module.exports = () => {
     // return `/plugin?name=${editor}&url=${editor_url}&type=js`
   }
 
+  function isResourceEditable(resource) {
+    if (resource.permissions && resource.permissions.write) return true
+    if (resource.path && resource.path.match(/^\/_local(\/.*)?$/)) return true
+    return false
+  }
 }

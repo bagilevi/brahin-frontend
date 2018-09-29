@@ -34,15 +34,9 @@ define((require, exports, module) => ((Brahin) => {
 
   function replaceResourceByCurrentLocation() {
     // Load resource from the backend // TODO: or cache
-    Brahin.spa.hideCurrentResource()
-    Brahin.storage.load(location.href)
-      .then((resource) => {
-        Brahin.spa.showResource(resource)
-      })
-      .catch(err => {
-        console.error('Could not show resource', err)
-        Brahin.showError(`Error while loading ${location.href}`)
-      })
+    Brahin.spa.transition({
+      getResource: () => Brahin.storage.load(location.href)
+    })
   }
 
   function onPopState(stateObj) {

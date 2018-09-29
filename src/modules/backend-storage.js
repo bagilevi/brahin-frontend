@@ -49,12 +49,23 @@ define(['jquery'], ($) => ((Brahin) => {
       const requestUrl = normalizeUrl(url)
 
       return new Promise((resolve, reject) => {
-        fetch(requestUrl)
+        fetch(requestUrl, { credentials: 'same-origin' })
           .then(response => {
             if (response.status !== 200) {
               const errorMessage = `Request to ${requestUrl} returned HTTP ${response.status}`
               console.error(errorMessage, response)
-              reject(errorMessage)
+              response.text()
+                .then(text => {
+                  try {
+                    const err = JSON.parse(text)
+                    reject(err)
+                  } catch {
+                    reject(errorMessage)
+                  }
+                })
+                .catch(err => {
+                  reject(errorMessage)
+                })
               return
             }
             console.log('got response', response)

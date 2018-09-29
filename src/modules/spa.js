@@ -6,10 +6,13 @@
 // It keeps the initialized editors in the DOM and hides them when we navigate away,
 // and shows them again when navigate back.
 
-define((require, exports, module) => ((Brahin) => {
-  const { initResourceEditor } = Brahin;
+const Swapper = require('./spa/Swapper')
+
+module.exports = (Brahin) => {
+  const { initResourceDisplay } = Brahin;
   const swapper = new Swapper();
   const spa = Brahin.spa = {
+    transition,
     showResource,
     hideCurrentResource,
   };
@@ -17,56 +20,59 @@ define((require, exports, module) => ((Brahin) => {
   init();
 
   function init() {
-    const el = $('.m-resource').first()
+    const el = $('.brahin-resource').first()
     if (el.length) {
       swapper.set(location.href, el)
     }
   }
 
+  // Transition from showing the current resource to showing a different one,
+  // e.g. when following a link.
+  //
+  // - options.getResource returning a promise of resource
+  function transition(options = {}) {
+    const { getResource } = options
+    if (!getResource) throw new Error('getResource missing in spa.transition')
+
+    // Avoid flicker - don't hide if the resource is loaded quickly
+    const timer = setTimeout(hideCurrentResource, 500)
+
+    getResource()
+      .then(resource => {
+        clearTimeout(timer)
+        showResource(resource)
+      })
+      .catch(err => {
+        clearTimeout(timer)
+        hideCurrentResource()
+        showResourceLoadingError(err)
+      })
+  }
+
+  function showResourceLoadingError(err) {
+    console.error('Could not show resource', err)
+    if (err.error) {
+      swapper.showError(err.error)
+      return
+    }
+    else {
+      Brahin.showError(`Error while loading ${location.href}`)
+    }
+  }
+
   function hideCurrentResource() {
-    window.resource = null
+    Brahin.dispatch('currentResourceChange', { resource: null })
     swapper.hide()
   }
 
   function showResource(resource) {
-    window.resource = resource
+    Brahin.dispatch('currentResourceChange', { resource: resource })
 
     swapper.show(resource.url, (el) => {
       // Callback to initialize the DOM element if wasn't in the cache
       el.html(resource.body)
       document.title = resource.title || 'Brahin'; // FIXME
-      initResourceEditor(resource, el)
+      initResourceDisplay(resource, el)
     })
   }
-
-  function Swapper(el) {
-    const cache = {}
-
-    this.set = (key, el) => {
-      cache[key] = el;
-    }
-
-    this.show = (key, initialize) => {
-      const parent = $('#page')
-      $('.m-resource').hide().removeClass('m-resource')
-
-      var el = cache[key]
-      if (el) {
-        console.log('resource element found in cache')
-        document.title = el.find('h1').first().text() || 'Brahin'; // FIXME
-        el.addClass('m-resource').show()
-      }
-      else {
-        console.log('resource element not in cache')
-        el = $('<div class="m-resource">')
-        parent.append(el)
-        cache[key] = el
-        initialize(el)
-      }
-    }
-
-    this.hide = () => {
-      $('.m-resource').hide().removeClass('m-resource')
-    }
-  }
-}))
+}
