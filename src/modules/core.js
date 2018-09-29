@@ -55,7 +55,7 @@ module.exports = () => {
     ]).then(() => {
       console.log('core scripts loaded')
       initResourceEditorFromDocument()
-      loadPluginScript('brahin-sharing', Brahin.VERSION)
+      loadPluginScript('brahin-permissions', Brahin.VERSION)
     }).catch((err) => {
       console.error('Could not load all modules, editor cannot be initialized.', err)
     })

@@ -11,7 +11,7 @@ module.exports = (Brahin) => {
   var buttonVisible = false
 
   $('#page-footer').append(
-    $('<a id="page-share-button">').hide().attr('href', 'javascript:').text('Share').on('click', handleShare)
+    $('<a id="page-permissions-button">').hide().attr('href', 'javascript:').text('Permissions').on('click', handlePermissionsClick)
   )
   if (Brahin.currentResource) setButtonVisibility(Brahin.currentResource)
 
@@ -19,22 +19,22 @@ module.exports = (Brahin) => {
 
   function setButtonVisibility(resource) {
     const shouldBeVisible = (resource && resource.permissions && resource.permissions.admin)
-    if (shouldBeVisible && !buttonVisible) { $('#page-share-button').show(); buttonVisible = true }
-    if (!shouldBeVisible && buttonVisible) { $('#page-share-button').hide(); buttonVisible = false }
+    if (shouldBeVisible && !buttonVisible) { $('#page-permissions-button').show(); buttonVisible = true }
+    if (!shouldBeVisible && buttonVisible) { $('#page-permissions-button').hide(); buttonVisible = false }
   }
 
-  function handleShare(ev) {
+  function handlePermissionsClick(ev) {
     ev.preventDefault()
     ev.stopPropagation()
     const resource = Brahin.currentResource
     if (!resource) throw new Error('No current resource found.')
-    if (!resource.permissions.admin) throw new Error('You are not authorized to edit sharing settings.')
-    invokeShareDialog(resource)
+    if (!resource.permissions.admin) throw new Error('You are not authorized to edit permissions.')
+    invokePermissionsDialog(resource)
   }
 
-  function invokeShareDialog(resource) {
+  function invokePermissionsDialog(resource) {
     const dialog = $('<div style="display: none"></div>')
-    dialog.attr('title', 'Sharing')
+    dialog.attr('title', 'Permissions')
     dialog.html('Loading data...')
 
     $('body').append(dialog)
@@ -58,8 +58,6 @@ module.exports = (Brahin) => {
 
   function addStateToDialog(dialog, state, resource) {
     const contents = $('<div>')
-      .append($('<p>').text('Share this page and all its subpages via this link:'))
-
     const container = $('<div class="container">')
 
     state.forEach((itemState, index) => {
@@ -90,8 +88,6 @@ module.exports = (Brahin) => {
       ev.preventDefault()
       ev.stopPropagation()
       var saveableState = _.compact(state)
-      console.log(saveableState)
-      console.log(JSON.stringify(saveableState, null, 2))
       saveState(resource, saveableState).then(() =>
         dialog.dialog('close')
       )
@@ -103,7 +99,7 @@ module.exports = (Brahin) => {
   }
 
   function buildEntry(container, resource, itemIndex, mainState) {
-    const entryEl = $('<div class="sharing-entry" style="margin-bottom: 1em; margin-top: 1em;">')
+    const grantEl = $('<div class="permission-grant" style="margin-bottom: 1em; margin-top: 1em;">')
 
     const groupId = itemIndex
     const itemState = mainState[itemIndex]
@@ -114,33 +110,33 @@ module.exports = (Brahin) => {
     linkInput.on('focus', () => linkInput.select())
     linkInput.on('dblclick', () => linkInput.select())
 
-    const publicCheckBox = $('<input type="checkbox" id="share-' + groupId + '-public">')
+    const publicCheckBox = $('<input type="checkbox" id="permissions-' + groupId + '-public">')
     const levelRadios = []
-    levelRadios[1] = $('<input type="radio" name="level" id="share-' + groupId +'-level1" value="1">')
-    levelRadios[2] = $('<input type="radio" name="level" id="share-' + groupId +'-level2" value="2">')
-    levelRadios[3] = $('<input type="radio" name="level" id="share-' + groupId +'-level3" value="3">')
-    levelRadios[4] = $('<input type="radio" name="level" id="share-' + groupId +'-level4" value="4">')
+    levelRadios[1] = $('<input type="radio" name="level" id="permissions-' + groupId +'-level1" value="1">')
+    levelRadios[2] = $('<input type="radio" name="level" id="permissions-' + groupId +'-level2" value="2">')
+    levelRadios[3] = $('<input type="radio" name="level" id="permissions-' + groupId +'-level3" value="3">')
+    levelRadios[4] = $('<input type="radio" name="level" id="permissions-' + groupId +'-level4" value="4">')
 
     const removeButton = $('<a>').attr('href', 'javascript:').text('Remove this rule')
     removeButton.on('click', (ev) => {
       ev.preventDefault()
       ev.stopPropagation()
       delete mainState[itemIndex]
-      entryEl.remove()
+      grantEl.remove()
     })
 
     const form = $('<form>')
       .append(linkInput)
       .append(publicCheckBox)
-      .append($('<label for="share-' + groupId + '-public">').text('public').attr('title', 'Accessible to anyone without a secret token'))
+      .append($('<label for="permissions-' + groupId + '-public">').text('public').attr('title', 'Accessible to anyone without a secret token'))
       .append(levelRadios[1])
-      .append($('<label for="share-' + groupId + '-level1">').text('add').attr('title', 'Can create new pages under this path'))
+      .append($('<label for="permissions-' + groupId + '-level1">').text('add').attr('title', 'Can create new pages under this path'))
       .append(levelRadios[2])
-      .append($('<label for="share-' + groupId + '-level2">').text('read').attr('title', 'Can read anything under this path'))
+      .append($('<label for="permissions-' + groupId + '-level2">').text('read').attr('title', 'Can read anything under this path'))
       .append(levelRadios[3])
-      .append($('<label for="share-' + groupId + '-level3">').text('edit').attr('title', 'Can edit anything under this path'))
+      .append($('<label for="permissions-' + groupId + '-level3">').text('edit').attr('title', 'Can edit anything under this path'))
       .append(levelRadios[4])
-      .append($('<label for="share-' + groupId + '-level4">').text('own').attr('title', 'Can edit and share edit anything under this path'))
+      .append($('<label for="permissions-' + groupId + '-level4">').text('own').attr('title', 'Can edit anything & change permissions under this path'))
       .append($('<div>')
         .append(removeButton)
       )
@@ -154,11 +150,9 @@ module.exports = (Brahin) => {
     function updateState() {
       itemState.token = publicCheckBox.is(':checked') ? '' : originalToken
       itemState.level = parseInt(form.find('input[name=level]:checked').val())
-      console.log('state', itemState)
       updateUi()
     }
     function updateUi() {
-      console.log('ui state', itemState)
       const { token, level } = itemState
       const url = resource.url + (token ? ('?access_token=' + token) : '')
       linkInput.val(url)
@@ -167,8 +161,8 @@ module.exports = (Brahin) => {
     }
 
     updateUi()
-    entryEl.append(form)
-    container.append(entryEl)
+    grantEl.append(form)
+    container.append(grantEl)
   }
 
   function generateToken(n = 40) {
@@ -184,17 +178,17 @@ module.exports = (Brahin) => {
   function saveState(resource, state) {
     return new Promise((resolve, reject) => {
       $.ajax({
-        url: resource.url + '/_sharing.json',
+        url: joinUrl(resource.url, '_permissions.json'),
         dataType: 'json',
         method: 'put',
-        data: { entries: state },
+        data: { grants: state },
         success: () => {
-          console.log('sharing settings saved successfully');
+          console.log('Permissions saved successfully.');
           resolve();
         },
         error: (err) => {
-          console.error('error while saving sharing settings', err);
-          Brahin.showError(`Error while saving sharing settings`)
+          console.error('Error while saving permissions', err);
+          Brahin.showError(`Error while saving permissions`)
           reject(err);
         },
       })
@@ -204,7 +198,7 @@ module.exports = (Brahin) => {
   function loadState(resource) {
     return new Promise((resolve, reject) => {
       $.ajax({
-        url: resource.url + '/_sharing.json',
+        url: joinUrl(resource.url, '_permissions.json'),
         dataType: 'json',
         method: 'get',
         success: (data) => {
@@ -212,11 +206,19 @@ module.exports = (Brahin) => {
           resolve(data);
         },
         error: (err) => {
-          console.error('error while loading sharing settings', err);
-          Brahin.showError(`Error while loading sharing settings`)
+          console.error('error while loading permissions', err);
+          Brahin.showError(`Error while loading permissions`)
           reject(err);
         },
       })
     })
+  }
+
+  function joinUrl(a, b) {
+    const sa = a[a.length - 1] === '/'
+    const sb = b[0] === '/'
+    if (sa && sb) return `${a}${b.substr(1)}`
+    if (!sa && !sb) return `${a}/${b}`
+    return `${a}${b}`
   }
 }
