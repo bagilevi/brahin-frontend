@@ -6,6 +6,7 @@ module.exports = (Brahin) => {
   const storage = Brahin.storage = {
     load,
     save,
+    saveFile,
     createNX,
     createEditorChangeReceiver,
   };
@@ -58,6 +59,25 @@ module.exports = (Brahin) => {
     return getStrategy(locator.strategyKey).then((strategy) => {
       resource.id = locator.id
       return strategy.save(resource, updatedAttributes)
+    })
+  }
+
+  function saveFile(file) {
+    const locator = new Locator(Brahin.currentResource.url)
+    return getStrategy(locator.strategyKey).then((strategy) => {
+      if (strategy.saveFile) {
+        return strategy.saveFile(file)
+      }
+      else {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.addEventListener('load', () => {
+            const dataURL = reader.result
+            resolve({ url: dataURL })
+          })
+          reader.readAsDataURL(file)
+        })
+      }
     })
   }
 

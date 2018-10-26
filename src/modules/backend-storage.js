@@ -114,6 +114,31 @@ define(['jquery'], ($) => ((Brahin) => {
         })
       })
     }
+
+    saveFile(file) {
+      console.log('storage.saveFile', file)
+      return new Promise((resolve, reject) => {
+        var formData = new FormData()
+        formData.append('upload', file)
+        $.ajax({
+          method: 'post',
+          url: '/_blobs',
+          data: formData,
+          dataType: 'json',
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: (data) => {
+            console.log('Upload succeeded', data)
+            resolve(data)
+          },
+          error: function(err) {
+            console.error('Failed to upload', err)
+            reject({ error: 'upload failed', reason: err })
+          }
+        });
+      })
+    }
   }
 
   function normalizeUrl(url) {
