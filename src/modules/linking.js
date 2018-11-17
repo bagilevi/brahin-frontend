@@ -3,6 +3,7 @@ define((require, exports, module) => ((Brahin) => {
     followLink,
     getLinkPropertiesForInsertion,
   };
+  const { urlUtils } = Brahin
 
   window.onpopstate = onPopState
 
@@ -77,8 +78,9 @@ define((require, exports, module) => ((Brahin) => {
 
   function generateDefaultHref(label) {
     const slug = label.toLowerCase().replace(/[^a-z0-9-]/g, '-')
-    if (Brahin.linkBase) {
-      return `${Brahin.linkBase}${slug}`
+    if (Brahin.currentResource) {
+      const linkBase = urlUtils.addTrailingSlash(Brahin.currentResource.path)
+      return `${linkBase}${slug}`
     }
     else {
       return `/${slug}`

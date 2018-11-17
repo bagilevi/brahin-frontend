@@ -124,7 +124,6 @@ module.exports = () => {
 
   function initResourceEditor(resource, el) {
     const scriptUrl = getEditorUrl(resource)
-    Brahin.linkBase = urlUtils.addTrailingSlash(resource.path)
     require([scriptUrl], (editorLoader) => {
       if (!editorLoader) {
         throw new Error(`Script loaded from "${scriptUrl}" did not return anything`)
