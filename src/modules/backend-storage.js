@@ -1,6 +1,8 @@
 console.log('backend-storage module loaded');
 
 define(['jquery'], ($) => ((Brahin) => {
+  const { logError } = Brahin
+
   class BackendStrategy {
 
     /**

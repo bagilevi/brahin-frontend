@@ -89,11 +89,6 @@ define((require, exports, module) => ((Brahin) => {
     return Brahin.storage.createNX(href, _.assign({}, Brahin.defaultResource, { title: title }))
   }
 
-  function logError(err, reject) {
-    console.error(err.error, err.params, err.reason, err.original);
-    if (reject) reject(err);
-  }
-
   // Is the href target handled by the same front-end?
   function isHrefToDifferentRealm(href) {
     return !isUrlSameOrigin(href);

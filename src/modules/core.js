@@ -14,6 +14,7 @@ module.exports = () => {
     define,
     require,
     showError,
+    logError,
     urlUtils,
   }
   window.Memonite = Brahin // backward-compatibility
@@ -44,6 +45,11 @@ module.exports = () => {
     container.append(msgEl);
     msgEl.fadeOut({ duration: 10000 }, () => msgEl.remove());
     msgEl.on('click', () => msgEl.remove())
+  }
+
+  function logError(err, reject) {
+    console.error(err.error, err.params, err.reason, err.original);
+    if (reject) reject(err);
   }
 
   $(document).ready(() => {
